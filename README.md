@@ -1,3 +1,2 @@
-# dash-app
+# Dash Charts
 
-testing
