@@ -3,21 +3,36 @@ from dash.dependencies import Input, Output
 import dash_core_components as dcc
 import dash_html_components as html
 from pandas_datareader import data as web
+import pandas as pd
 from datetime import datetime as dt
 
 app = dash.Dash(__name__)
 server = app.server
 
+
+def populate():
+    csv_data = pd.read_csv('data/companylist.csv', usecols=['Symbol', 'Name'])
+    csv_data = csv_data.sort_values(csv_data.columns[0])
+    opts = []
+    for x in csv_data.to_dict('records'):
+        opts.append({'label': x['Name'], 'value': x['Symbol']})
+    return opts
+
+
+# {'label': 'Apple', 'value': 'AAPL'},
+# {'label': 'Adobe', 'value': 'ADBE'},
+# {'label': 'Coke', 'value': 'COKE'},
+# {'label': 'Exxon', 'value': 'XOM'},
+# {'label': 'Microsoft', 'value': 'MSFT'},
+# {'label': 'Tesla', 'value': 'TSLA'}
+
+
 app.layout = html.Div([
-    html.H1('Stock Tickers'),
+    html.H1('NASDAQ Stock Tickers'),
     dcc.Dropdown(
         id='my-dropdown',
-        options=[
-            {'label': 'Coke', 'value': 'COKE'},
-            {'label': 'Tesla', 'value': 'TSLA'},
-            {'label': 'Apple', 'value': 'AAPL'}
-        ],
-        value='COKE'
+        options=populate(),
+        value='AAPL'
     ),
     dcc.Graph(id='my-graph')
 ])
