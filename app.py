@@ -28,7 +28,11 @@ def populate():
 
 
 app.layout = html.Div([
-    html.H1('NASDAQ Stock Tickers'),
+    html.H1([
+        html.A('Dash', href="https://plot.ly/products/dash/", target="_blank", style={'float': 'left'}),
+        html.P(': A web application framework for Python.')
+    ]),
+    html.H3('NASDAQ Stock Tickers', style={'clear': 'both'}),
     dcc.Dropdown(
         id='my-dropdown',
         options=populate(),
