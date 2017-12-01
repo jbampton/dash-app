@@ -1,11 +1,14 @@
 """Dash Charts Demo."""
 
 from datetime import datetime as dt
+from io import StringIO
+import requests
 import dash
 from dash.dependencies import Input, Output
 import dash_core_components as dcc
 import dash_html_components as html
-from pandas_datareader import data as web
+# from pandas_datareader import data as web
+from pandas.io.common import urlencode
 import pandas as pd
 
 
@@ -42,13 +45,38 @@ app.layout = html.Div([
 @app.callback(Output('my-graph', 'figure'), [Input('my-dropdown', 'value')])
 def update_graph(selected_dropdown_value):
     """Update graph with new data of selected company."""
-    df = web.DataReader(
-        selected_dropdown_value, data_source='google',
-        start=dt(2017, 1, 1), end=dt.now())
+    # df = web.DataReader(
+    #    selected_dropdown_value, data_source='google',
+    #    start=dt(2017, 1, 1), end=dt.now())
+
+    # fix for broken data reader.
+    BASE = 'http://finance.google.com/finance/historical'
+
+    def get_params(symbol, start, end):
+        params = {
+            'q': symbol,
+            'startdate': start.strftime('%Y/%m/%d'),
+            'enddate': end.strftime('%Y/%m/%d'),
+            'output': "csv"
+        }
+        return params
+
+    def build_url(symbol, start, end):
+        params = get_params(symbol, start, end)
+        return BASE + '?' + urlencode(params)
+
+    start = dt(2017, 1, 1)
+    end = dt.now()
+    sym = selected_dropdown_value
+    url = build_url(sym, start, end)
+
+    data = requests.get(url).text
+    data = pd.read_csv(StringIO(data), index_col='Date', parse_dates=True)
+
     return {
         'data': [{
-            'x': df.index,
-            'y': df.Close
+            'x': data.index,
+            'y': data['Close']
         }]
     }
 
