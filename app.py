@@ -3,10 +3,12 @@
 from datetime import datetime as dt
 from io import StringIO
 import requests
+
 import dash
 from dash.dependencies import Input, Output
 import dash_core_components as dcc
 import dash_html_components as html
+
 # from pandas_datareader import data as web
 from pandas.io.common import urlencode
 import pandas as pd
@@ -16,7 +18,7 @@ app = dash.Dash(__name__)
 server = app.server
 
 
-def populate():
+def populate_nasdaq():
     """Get the 2 columns of data from the CSV file and return an array of labels and values."""
     csv_data = pd.read_csv('data/companylist.csv', usecols=['Symbol', 'Name'])
     csv_data = csv_data.sort_values(csv_data.columns[0])
@@ -35,7 +37,7 @@ app.layout = html.Div([
     html.H3('NASDAQ Stock Tickers', style={'clear': 'both'}),
     dcc.Dropdown(
         id='my-dropdown',
-        options=populate(),
+        options=populate_nasdaq(),
         value='AAPL'
     ),
     dcc.Graph(id='my-graph')
@@ -70,13 +72,13 @@ def update_graph(selected_dropdown_value):
     sym = selected_dropdown_value
     url = build_url(sym, start, end)
 
-    data = requests.get(url).text
-    data = pd.read_csv(StringIO(data), index_col='Date', parse_dates=True)
+    df = requests.get(url).text
+    df = pd.read_csv(StringIO(df), index_col='Date', parse_dates=True)
 
     return {
         'data': [{
-            'x': data.index,
-            'y': data['Close']
+            'x': df.index,
+            'y': df['Close']
         }]
     }
 
